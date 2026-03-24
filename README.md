@@ -2,13 +2,65 @@
 
 ## 🏷️ Overview
 
-Overlook is a MacOS-native remote console for https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip GLKVM / Comet-style KVM devices. With this application, you can easily manage and interact with your KVM devices from the comfort of your Mac. Whether you need to perform maintenance or access controls from anywhere, Overlook simplifies the process.
+Overlook is a macOS-native remote console for GL.iNet GLKVM / Comet-style KVM devices. With this application, you can easily manage and interact with your KVM devices from the comfort of your Mac. Whether you need to perform maintenance or access controls from anywhere, Overlook simplifies the process.
 
-## 📥 Download the Application
+![Overlook Screenshot](OverlookScreenshot.png)
 
-[![Download Overlook](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip%https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)
+## 🛠️ Building from Source
 
-Visit this page to download: [Overlook Releases](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)
+### Prerequisites
+
+- **macOS 14.0 (Sonoma)** or later
+- **Xcode 15** or later (available from the [Mac App Store](https://apps.apple.com/app/xcode/id497799835))
+- An Apple ID (free) signed in to Xcode for code signing
+
+### Steps
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/iamjairo/Glinet-KVM-Overlook.git
+   cd Glinet-KVM-Overlook
+   ```
+
+2. **Open the project in Xcode:**
+
+   ```bash
+   open Overlook.xcodeproj
+   ```
+
+   Or double-click `Overlook.xcodeproj` in Finder.
+
+3. **Resolve Swift Package dependencies:**
+
+   Xcode automatically resolves the [WebRTC](https://github.com/stasel/WebRTC) Swift Package dependency the first time the project is opened. Wait for the package resolution to complete (visible in the progress bar at the top of the Xcode window).
+
+4. **Configure code signing:**
+
+   - In the Project navigator, select the **Overlook** project.
+   - Select the **Overlook** target.
+   - Under the **Signing & Capabilities** tab, choose your personal team from the **Team** dropdown (sign in with your Apple ID via **Xcode → Settings → Accounts** if needed).
+
+5. **Build and run:**
+
+   Select **My Mac** as the run destination in the toolbar, then press **⌘R** (or choose **Product → Run**).
+
+   To build without running, press **⌘B** (or choose **Product → Build**).
+
+### Command-line build (optional)
+
+```bash
+xcodebuild -project Overlook.xcodeproj \
+           -scheme Overlook \
+           -configuration Release \
+           -destination 'platform=macOS' \
+           CODE_SIGN_IDENTITY="-" \
+           build
+```
+
+The built app will be placed in the `~/Library/Developer/Xcode/DerivedData/` directory.
+
+---
 
 ## 🚀 Getting Started
 
@@ -16,28 +68,14 @@ Visit this page to download: [Overlook Releases](https://raw.githubusercontent.c
 
 To run Overlook, you need the following:
 
-- MacOS 10.15 (Catalina) or later
+- macOS 14.0 (Sonoma) or later
 - At least 2 GB of RAM
 - 100 MB of free disk space
 
-### ⚙️ Installation Steps
-
-1. **Download the Application:**
-   Click on the download link above to access the releases page. Choose the latest version of Overlook and download the `.dmg` file.
-
-2. **Open the Downloaded File:**
-   Once the download completes, locate the `.dmg` file in your Downloads folder. Double-click the file to open it.
-
-3. **Install Overlook:**
-   You will see a new window pop up. Drag the Overlook icon into your Applications folder. This action installs the application on your Mac.
-
-4. **Launch Overlook:**
-   Go to your Applications folder and find Overlook. Double-click to start the application. You might see a security warning the first time you open it. If you do, go to System Preferences > Security & Privacy, and click "Open Anyway."
-
-## 🔧 Setting Up the Application
+### ⚙️ Usage
 
 1. **Connect to Your KVM Device:**
-   When Overlook opens, click on "Connect" to add a new device. Enter the IP address of your KVM device. If you’re unsure of the IP, refer to your device's documentation.
+   When Overlook opens, click on "Connect" to add a new device. Enter the IP address of your KVM device. If you're unsure of the IP, refer to your device's documentation.
 
 2. **Login:**
    Input your username and password for the KVM device. Ensure these are correct to gain access.
@@ -61,7 +99,7 @@ If you encounter any issues or have questions, please check the following:
   - Ensure you entered the correct IP address and credentials.
 
 - **Where to Get Help:**
-  Visit the [GitHub Issues page](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip) to report a problem or ask questions.
+  Visit the [GitHub Issues page](https://github.com/iamjairo/Glinet-KVM-Overlook/issues) to report a problem or ask questions.
 
 ## 📅 Future Updates
 
@@ -70,10 +108,3 @@ We plan to regularly update Overlook with new features and improvements. Follow 
 ## 📄 License
 
 This project is licensed under the MIT License. You can use, modify, and distribute the code as per the license terms.
-
-## 🔗 Additional Resources
-
-- For more information about https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip devices, visit their official website: [https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip).
-- Check out the community forums for best practices and advice on using KVM devices effectively.
-
-By following these steps, you can successfully download, install, and start using Overlook to control your KVM devices. Enjoy the ease of managing your setup with this powerful tool!
