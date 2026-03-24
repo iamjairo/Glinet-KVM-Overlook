@@ -131,6 +131,63 @@ xcodebuild build \
 
 ---
 
+## Distributing / Creating a Release
+
+### Automated release via GitHub Actions (recommended)
+
+The repository includes a **Release** workflow (`.github/workflows/release.yml`) that:
+
+1. Archives the app with `xcodebuild archive` (Release configuration).
+2. Packages `Overlook.app` as a `.zip` using `ditto`.
+3. Creates a GitHub Release and uploads the zip automatically.
+
+**To publish a new release, push a version tag:**
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow triggers on any tag matching `v*.*.*`, runs the archive + package steps, and creates a GitHub Release with the zip attached and auto-generated release notes.
+
+> **Note:** The automated build uses ad-hoc signing (`CODE_SIGN_IDENTITY=""`) so no Apple Developer account is needed in CI. See [below](#developer-id-signing--notarization) if you want a fully signed and notarized release.
+
+### Manual release via Xcode Organizer
+
+1. In Xcode, choose **Product → Archive**.
+2. When the Organizer window opens, select your archive and click **Distribute App**.
+3. Choose **Direct Distribution** (for distributing outside the App Store) or **App Store Connect** as appropriate.
+4. Follow the prompts to sign, notarize, and export.
+5. Upload the resulting `.dmg` or `.zip` to a GitHub Release manually.
+
+### Installing a downloaded release
+
+After downloading and unzipping `Overlook-vX.Y.Z.zip`:
+
+1. Move `Overlook.app` to your **Applications** folder.
+2. The first time you open it, macOS Gatekeeper may show a warning because the binary is not notarized.
+   - **Right-click** `Overlook.app` and choose **Open**, then click **Open** in the dialog — you only need to do this once.
+   - Alternatively, remove the quarantine attribute from Terminal:
+     ```bash
+     xattr -cr /Applications/Overlook.app
+     ```
+
+### Developer ID signing + notarization
+
+For a build that opens without any Gatekeeper prompt, you need an **Apple Developer Program** membership and a **Developer ID Application** certificate. Add the following secrets to the repository:
+
+| Secret | Description |
+|---|---|
+| `APPLE_CERTIFICATE` | Base64-encoded `.p12` Developer ID certificate |
+| `APPLE_CERTIFICATE_PASSWORD` | Password for the `.p12` file |
+| `APPLE_TEAM_ID` | Your 10-character alphanumeric Apple Team ID |
+| `APPLE_ID` | Apple ID email used for notarization |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for `notarytool` |
+
+Then update `.github/workflows/release.yml` to import the certificate into the runner keychain, remove the `CODE_SIGNING_ALLOWED=NO` overrides, use `xcodebuild -exportArchive` with a `developer-id` ExportOptions.plist, and run `xcrun notarytool submit` + `xcrun stapler staple` before packaging.
+
+---
+
 ## Quick Start (How to use Overlook)
 
 ### 1) Discover or add a device

@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Archive and Release (macOS)
+    runs-on: macos-latest
+
+    permissions:
+      contents: write   # needed to create a GitHub Release and upload assets
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure Preview Content path exists
+        run: mkdir -p "Overlook/Preview Content"
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Cache SwiftPM + DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-xcode-release-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-
+
+      - name: Resolve Swift package dependencies
+        run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies \
+            -project Overlook.xcodeproj \
+            -scheme Overlook
+
+      # -----------------------------------------------------------------------
+      # Archive (Release configuration, no code signing).
+      # The .app bundle lands at:
+      #   $RUNNER_TEMP/Overlook.xcarchive/Products/Applications/Overlook.app
+      #
+      # To produce a *signed + notarized* build instead, replace the
+      # CODE_SIGN_* overrides below with your Developer ID certificate and
+      # add an export-options plist (see README § Distributing).
+      # -----------------------------------------------------------------------
+      - name: Archive
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project Overlook.xcodeproj \
+            -scheme Overlook \
+            -configuration Release \
+            -sdk macosx \
+            -archivePath "$RUNNER_TEMP/Overlook.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Package .app as zip
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/Overlook.xcarchive/Products/Applications/Overlook.app"
+          ZIP="$RUNNER_TEMP/Overlook-${{ github.ref_name }}.zip"
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ github.ref_name }}" \
+            "$ZIP" \
+            --repo "${{ github.repository }}" \
+            --title "Overlook ${{ github.ref_name }}" \
+            --generate-notes

@@ -11,6 +11,9 @@ jobs:
     name: Build Overlook (macOS)
     runs-on: macos-latest
 
+    permissions:
+      contents: read   # read-only; this job only builds, it does not publish
+
     strategy:
       fail-fast: false
       matrix:
