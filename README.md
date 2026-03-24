@@ -1,79 +1,382 @@
-# 🎮 Overlook - Control Your KVM Devices Effortlessly
+# Overlook
 
-## 🏷️ Overview
+[![Xcode - Build](https://github.com/iamjairo/Glinet-KVM-Overlook/actions/workflows/objective-c-xcode.yml/badge.svg)](https://github.com/iamjairo/Glinet-KVM-Overlook/actions/workflows/objective-c-xcode.yml)
 
-Overlook is a MacOS-native remote console for https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip GLKVM / Comet-style KVM devices. With this application, you can easily manage and interact with your KVM devices from the comfort of your Mac. Whether you need to perform maintenance or access controls from anywhere, Overlook simplifies the process.
+Overlook is a macOS-native remote console for GL.iNet GLKVM / Comet-style KVM devices.
 
-## 📥 Download the Application
+![Overlook Screenshot](./OverlookScreenshot.png)
 
-[![Download Overlook](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip%https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)
+It focuses on *fast*, *low-friction* day-to-day "reach over and fix it" workflows:
 
-Visit this page to download: [Overlook Releases](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip)
+- Low-latency WebRTC video streaming (Janus signaling).
+- Full keyboard + mouse input capture.
+- **Clipboard bridging**:
+  - **Local → Remote paste** with `⌘V` (types the clipboard into the remote machine).
+  - **Remote → Local copy via ML OCR**: select text directly from the live video stream using Apple Vision and copy it to your Mac clipboard.
 
-## 🚀 Getting Started
+If you spend time in BIOS/UEFI, bootloaders, headless servers, or "the machine that's *just* out of reach", Overlook aims to make the remote console feel like a first-class Mac app.
 
-### 🖥️ System Requirements
+> **Upstream / sister repo:** [rcawston/Overlook](https://github.com/rcawston/Overlook)
 
-To run Overlook, you need the following:
+---
 
-- MacOS 10.15 (Catalina) or later
-- At least 2 GB of RAM
-- 100 MB of free disk space
+## Highlights
 
-### ⚙️ Installation Steps
+### 1) Copy from the remote screen using ML OCR
 
-1. **Download the Application:**
-   Click on the download link above to access the releases page. Choose the latest version of Overlook and download the `.dmg` file.
+Overlook includes an **OCR Selection Mode** that behaves like "Live Text" for a remote computer:
 
-2. **Open the Downloaded File:**
-   Once the download completes, locate the `.dmg` file in your Downloads folder. Double-click the file to open it.
+- Turn on OCR mode.
+- Drag a box on the video stream.
+- Overlook runs on-device OCR (Apple Vision framework), shows the recognized text, and you can copy it to your clipboard.
 
-3. **Install Overlook:**
-   You will see a new window pop up. Drag the Overlook icon into your Applications folder. This action installs the application on your Mac.
+This is especially useful for:
 
-4. **Launch Overlook:**
-   Go to your Applications folder and find Overlook. Double-click to start the application. You might see a security warning the first time you open it. If you do, go to System Preferences > Security & Privacy, and click "Open Anyway."
+- Capturing one-time passwords, serial numbers, IPs, MAC addresses.
+- Copying terminal output from machines with no clipboard integration.
+- Copying text in pre-boot environments.
 
-## 🔧 Setting Up the Application
+**Note:** OCR is performed locally on your Mac.
 
-1. **Connect to Your KVM Device:**
-   When Overlook opens, click on "Connect" to add a new device. Enter the IP address of your KVM device. If you’re unsure of the IP, refer to your device's documentation.
+### 2) Paste to the remote machine with `⌘V`
 
-2. **Login:**
-   Input your username and password for the KVM device. Ensure these are correct to gain access.
+Overlook intercepts `⌘V` while input capture is enabled and sends the macOS clipboard to the remote via the device's HID "print text" API.
 
-3. **Configuration Options:**
-   Explore various settings within Overlook. You can customize how the interface displays information about your KVM device. Feel free to adjust settings based on your preferences.
+### 3) Low-latency WebRTC video
 
-## 📘 Features of Overlook
+Overlook uses WebRTC for streaming and collects receiver stats (bitrate, fps, jitter buffer / playout delay, decode time, packet loss, ICE RTT).
 
-- **Secure Connections:** Overlook supports SSL connections to ensure secure communication with your KVM devices.
-- **User-friendly Interface:** The application presents a clean and straightforward interface, making it easy for anyone to use.
-- **Multi-Device Support:** You can connect and control multiple KVM devices simultaneously using tabs.
-- **Real-time Updates:** The app provides real-time updates about the status of your connected KVM devices.
+These stats are surfaced in the window title, which makes diagnosing latency issues and tuning quality settings much easier.
 
-## 📫 Support & FAQ
+### 4) A focused Settings panel (WebUI-aligned)
 
-If you encounter any issues or have questions, please check the following:
+The Settings UI is intentionally aligned with GLKVM's WebUI behavior where it matters:
 
-- **Common Issues:**
-  - If Overlook fails to connect, verify that your KVM device is powered on and connected to the same network.
-  - Ensure you entered the correct IP address and credentials.
+- **Video quality presets** (Low/Medium/High/Ultra-high/Insane/Custom).
+- **EDID** selection and custom EDID entry.
+- Audio + microphone toggles (reconnect required).
 
-- **Where to Get Help:**
-  Visit the [GitHub Issues page](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip) to report a problem or ask questions.
+---
 
-## 📅 Future Updates
+## What devices are supported?
 
-We plan to regularly update Overlook with new features and improvements. Follow the GitHub repository to stay informed about the latest releases and enhancements.
+Overlook is built around GL.iNet's GLKVM/Comet HTTP + WebRTC stack.
 
-## 📄 License
+In code, devices are modeled as `KVMDevice` and discovered/managed by `KVMDeviceManager`.
 
-This project is licensed under the MIT License. You can use, modify, and distribute the code as per the license terms.
+If you have:
 
-## 🔗 Additional Resources
+- GL.iNet Comet / GLKVM
+- A GLKVM-compatible device exposing Janus signaling at `wss://<host>:<port>/janus/ws`
 
-- For more information about https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip devices, visit their official website: [https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip](https://raw.githubusercontent.com/Galin1211/Overlook/main/Overlook.xcodeproj/Software-unpigmented.zip).
-- Check out the community forums for best practices and advice on using KVM devices effectively.
+…Overlook is intended to work.
 
-By following these steps, you can successfully download, install, and start using Overlook to control your KVM devices. Enjoy the ease of managing your setup with this powerful tool!
+For now, it's only designed for local network use or direct IP connections (e.g. over VPN).
+
+---
+
+## Installation
+
+### Requirements
+
+- macOS 14+ (deployment target in project is macOS 14.0).
+- Xcode 15 or later (available from the [Mac App Store](https://apps.apple.com/app/xcode/id497799835)).
+- Network access to your KVM device.
+
+### WebRTC dependency
+
+Overlook uses the Swift Package:
+
+- `https://github.com/stasel/WebRTC` (pinned in `Package.resolved`)
+
+Xcode resolves this automatically when you open the project.
+
+### Build
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/iamjairo/Glinet-KVM-Overlook.git
+   cd Glinet-KVM-Overlook
+   ```
+
+2. Open `Overlook.xcodeproj` in Xcode:
+
+   ```bash
+   open Overlook.xcodeproj
+   ```
+
+3. Wait for Xcode to finish resolving Swift Package dependencies (progress bar at the top of the window).
+
+4. Select the **Overlook** scheme and **My Mac** as the run destination.
+
+5. Press **⌘R** to build and run, or **⌘B** to build only.
+
+> **Code signing:** Under **Signing & Capabilities**, select your personal team from the **Team** dropdown (sign in with a free Apple ID via **Xcode → Settings → Accounts** if needed).
+
+#### Command-line build (no signing)
+
+```bash
+xcodebuild build \
+  -project Overlook.xcodeproj \
+  -scheme Overlook \
+  -configuration Release \
+  -sdk macosx \
+  -destination "platform=macOS" \
+  CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGN_IDENTITY="" \
+  DEVELOPMENT_TEAM=""
+```
+
+---
+
+## Distributing / Creating a Release
+
+### Automated release via GitHub Actions (recommended)
+
+The repository includes a **Release** workflow (`.github/workflows/release.yml`) that:
+
+1. Archives the app with `xcodebuild archive` (Release configuration).
+2. Packages `Overlook.app` as a `.zip` using `ditto`.
+3. Creates a GitHub Release and uploads the zip automatically.
+
+**To publish a new release, push a version tag:**
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow triggers on any tag matching `v*.*.*`, runs the archive + package steps, and creates a GitHub Release with the zip attached and auto-generated release notes.
+
+> **Note:** The automated build uses ad-hoc signing (`CODE_SIGN_IDENTITY=""`) so no Apple Developer account is needed in CI. See [below](#developer-id-signing--notarization) if you want a fully signed and notarized release.
+
+### Manual release via Xcode Organizer
+
+1. In Xcode, choose **Product → Archive**.
+2. When the Organizer window opens, select your archive and click **Distribute App**.
+3. Choose **Direct Distribution** (for distributing outside the App Store) or **App Store Connect** as appropriate.
+4. Follow the prompts to sign, notarize, and export.
+5. Upload the resulting `.dmg` or `.zip` to a GitHub Release manually.
+
+### Installing a downloaded release
+
+After downloading and unzipping `Overlook-vX.Y.Z.zip`:
+
+1. Move `Overlook.app` to your **Applications** folder.
+2. The first time you open it, macOS Gatekeeper may show a warning because the binary is not notarized.
+   - **Right-click** `Overlook.app` and choose **Open**, then click **Open** in the dialog — you only need to do this once.
+   - Alternatively, remove the quarantine attribute from Terminal:
+     ```bash
+     xattr -cr /Applications/Overlook.app
+     ```
+
+### Developer ID signing + notarization
+
+For a build that opens without any Gatekeeper prompt, you need an **Apple Developer Program** membership and a **Developer ID Application** certificate. Add the following secrets to the repository:
+
+| Secret | Description |
+|---|---|
+| `APPLE_CERTIFICATE` | Base64-encoded `.p12` Developer ID certificate |
+| `APPLE_CERTIFICATE_PASSWORD` | Password for the `.p12` file |
+| `APPLE_TEAM_ID` | Your 10-character alphanumeric Apple Team ID |
+| `APPLE_ID` | Apple ID email used for notarization |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for `notarytool` |
+
+Then update `.github/workflows/release.yml` to import the certificate into the runner keychain, remove the `CODE_SIGNING_ALLOWED=NO` overrides, use `xcodebuild -exportArchive` with a `developer-id` ExportOptions.plist, and run `xcrun notarytool submit` + `xcrun stapler staple` before packaging.
+
+---
+
+## Quick Start (How to use Overlook)
+
+### 1) Discover or add a device
+
+Overlook supports multiple discovery methods (mDNS + network scanning + common target probes) and also manual entry.
+
+From the main window:
+
+- Click **Scan** to search your network.
+- Or click **Manual Connect…** to enter host/IP and port.
+
+From the menu bar:
+
+- Use the Overlook status item to scan and connect quickly.
+
+### 2) Connect
+
+Select a device, then connect.
+
+On connect, Overlook will:
+
+- Authenticate to the device API (cookie token).
+- Enable HID on the device.
+- Start WebRTC streaming.
+- Start keyboard/mouse capture.
+
+If authentication fails, you'll be prompted for a password and Overlook will attempt a login.
+
+### 3) Control the remote machine
+
+Once connected:
+
+- Mouse movement, clicks, dragging, and scroll are forwarded.
+- Keyboard is captured and forwarded.
+- Standard UX flows like fullscreen work well for "monitor replacement" usage.
+
+---
+
+## OCR Copy Mode (Remote → Local)
+
+### Enable OCR mode
+
+You can enable OCR mode from:
+
+- The main toolbar button (document/text icon).
+- The fullscreen hover controls.
+- The menu bar item (also supports a global shortcut).
+
+When OCR mode is enabled:
+
+- Overlook captures video frames from the WebRTC stream.
+- It periodically detects text regions and overlays bounding boxes.
+
+### Select text
+
+OCR selection supports two gestures:
+
+- **Click:** OCR a small region around the click point.
+- **Drag a rectangle:** OCR the selected region.
+
+Overlook then shows a "Recognized Text" sheet where you can:
+
+- Copy the recognized text to your macOS clipboard.
+- Close the sheet.
+
+### Notes / limitations
+
+- OCR accuracy depends on resolution, compression, font size, and contrast.
+- OCR is currently tuned for English but uses automatic language detection.
+- OCR works even when the remote machine has no clipboard support.
+
+---
+
+## Clipboard Paste (Local → Remote)
+
+### Paste with `⌘V`
+
+When connected and input capture is active:
+
+- Press `⌘V` on your Mac.
+- Overlook reads your macOS clipboard and sends it to the remote machine via the device's HID text entry API.
+
+This is ideal for:
+
+- Commands
+- URLs
+- Password manager output (use responsibly)
+- Small scripts / config snippets
+
+### Tips
+
+- If you paste a very large block of text, the remote side may take time to process.
+- For best reliability, paste smaller chunks when interacting with BIOS/UEFI or slow boot environments.
+
+---
+
+## Keyboard shortcuts
+
+### In-session shortcuts (while keyboard capture is enabled)
+
+- `⌘C`: toggles OCR selection mode (so you can "copy" from the remote screen).
+- `⌘V`: pastes macOS clipboard to the remote.
+
+### Menu bar global shortcuts
+
+The menu bar agent listens for global shortcuts using `⌘⇧` modifiers:
+
+- `⌘⇧O`: Toggle OCR.
+- `⌘⇧R`: Scan for devices.
+- `⌘⇧V`: Open Quick Connect.
+
+---
+
+## Settings
+
+### Video
+
+- **Mode**: video processing mode (low-latency oriented).
+- **Quality Presets**:
+  - Low: `h264_bitrate=500`, `h264_gop=30`, `stream_quality=0`
+  - Medium: `h264_bitrate=2000`, `h264_gop=30`, `stream_quality=1`
+  - High: `h264_bitrate=5000`, `h264_gop=60`, `stream_quality=2`
+  - Ultra-high: `h264_bitrate=8000`, `h264_gop=60`, `stream_quality=3`
+  - Insane: `quality=100`, `h264_bitrate=20000`, `h264_gop=60`, `stream_quality=3`
+  - Custom: unlocks the advanced streamer controls
+
+- **EDID**:
+  - Pick from known-good EDID presets.
+  - Or choose "Custom" and paste your own EDID blob.
+
+### Audio
+
+- Audio output toggle.
+- Microphone toggle.
+
+**Important:** the UI indicates reconnect is required for audio/mic changes.
+
+---
+
+## Troubleshooting
+
+### "I can't find my device when scanning"
+
+- Make sure your Mac is on the same network as the KVM.
+- Try **Manual Connect…** with the host/IP and port.
+- Some networks block mDNS; Overlook also does a best-effort port scan and probes common targets.
+
+### "WebRTC connects but video is blank / unstable"
+
+- Confirm the device's WebUI works.
+- Try toggling reconnect.
+- Check the window title stats (bitrate/fps) to confirm frames are arriving.
+
+### "OCR doesn't detect text"
+
+- Increase stream quality (higher bitrate helps OCR).
+- Make the text larger on the remote side.
+- Avoid heavy compression artifacts (try High/Ultra-high/Insane).
+
+### "Paste doesn't work"
+
+- Ensure you're connected.
+- Ensure input capture is active.
+- Confirm the remote cursor focuses a text field.
+
+---
+
+## Development notes
+
+### Project structure
+
+- `Overlook/ContentView.swift` — Main app UI and fullscreen experience.
+- `Overlook/VideoSurfaceView.swift` — Hosts the WebRTC video view; routes mouse/scroll events; implements OCR selection gestures.
+- `Overlook/WebRTCManager.swift` — WebRTC peer connection + Janus signaling; receiver stats; optional audio/mic track.
+- `Overlook/InputManager.swift` — Keyboard/mouse capture; local→remote paste (`⌘V`); HID transport via WebSocket.
+- `Overlook/OCRManager.swift` + `Overlook/OCRViews.swift` — Apple Vision OCR pipeline; text region overlay + "Recognized Text" sheet.
+- `Overlook/GLKVMClient.swift` — Device HTTP APIs (streamer params, system config, EDID, HID print, etc.).
+- `Overlook/KVMDeviceManager.swift` — Discovery, saved devices, authentication.
+- `Overlook/MenuBarAgent.swift` — Menu bar UI + quick actions.
+
+### Security notes
+
+- The app currently allows insecure TLS for device connections (useful for devices with self-signed certs).
+- Treat your `auth_token` like a password.
+
+---
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**.
+
+See [`LICENSE.MD`](./LICENSE.MD).
