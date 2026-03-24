@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:   # allow manual builds from the Actions tab
 
 jobs:
   build:
@@ -48,16 +49,33 @@ jobs:
             -project Overlook.xcodeproj \
             -scheme Overlook
 
-      - name: Build (${{ matrix.configuration }})
+      - name: Archive (${{ matrix.configuration }})
         run: |
           set -euo pipefail
-          xcodebuild build \
+          xcodebuild archive \
             -project Overlook.xcodeproj \
             -scheme Overlook \
             -configuration "${{ matrix.configuration }}" \
             -sdk macosx \
-            -destination "platform=macOS" \
+            -archivePath "$RUNNER_TEMP/Overlook-${{ matrix.configuration }}.xcarchive" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM=""
+
+      - name: Package .app as zip (${{ matrix.configuration }})
+        if: matrix.configuration == 'Release'
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/Overlook-Release.xcarchive/Products/Applications/Overlook.app"
+          ZIP="$RUNNER_TEMP/Overlook-Release.zip"
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Upload build artifact (${{ matrix.configuration }})
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Overlook-Release
+          path: ${{ env.ZIP }}
+          retention-days: 14
